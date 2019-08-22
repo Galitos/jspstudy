@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="board"><!-- 다른  mapper 파일과 중복되지않게 작성 -->
+<!-- 답변글 저장 -->
+	<insert id="reply">
+		insert into board
+		(num,writer,subject,passwd,ref,re_step,re_revel,
+		content,ip,filename,filesize) values
+		( (select nvl(max(num)+1,1) from board), 
+		#{writer}, #{subject}, #{passwd}, #{ref}, #{re_step}, #{re_revel},
+		#{content}, #{ip}, #{filename}, #{filesize})
+	</insert>
+	<!-- 답변글이ㅡ 출력 순번 조정 -->
+	<update id="updateStep">
+		update board set re_step = re_step + 1
+		where ref=#{ref} and re_step >= #{re_step}
+	</update>
+
+	<delete id="delete">
+		delete from board where num=#{num}
+	</delete>
+
+<!-- 레코드 수정 -->
+	<update id="update">
+		update board
+		set writer=#{writer}, subject=#{subject},
+			content=#{content}, filename=#{filename},
+			filesize=#{filesize}, down=#{down}
+		where num=#{num}	
+	</update>
+
+
+<!-- 비밀번호 체크  -->
+	<select id="pwCheck" resultType="String">
+	select passwd from board where num=#{num} and passwd=#{passwd}
+	</select>
+
+	<select id="commentList" resultType="board.dto.BoardCommentDTO">
+		select * from board_comment 
+		where board_num=#{board_num}
+		order by comment_num desc
+	</select>
+
+	<!-- 댓글 저장 -->
+	<insert id="commentAdd">
+	insert into board_comment (comment_num, board_num, writer, content)
+	values ((select nvl(max(comment_num)+1,1)from board_comment),
+	#{board_num}, #{writer}, #{content}) 
+	</insert>
+
+	<update id="plusReadCount">
+		update board set readcount=readcount+1 where num=#{num}
+	</update>
+
+
+
+<!-- 게시물의 상세 내용 리턴 -->	
+	<select id="view" resultType="board.dto.BoardDTO">
+		select * from board where num=#{num}
+	</select>
+
+	<select id="list" resultType="board.dto.BoardDTO">
+select num,writer,subject,reg_date,readcount,filename,
+	filesize,down,ref,re_step,re_revel,
+    (select count(*) from board_comment where board_num=num) comment_count
+	from board order by ref desc, re_step asc
+	</select>
+	
+	<select id="searchList" resultType="board.dto.BoardDTO">
+		select num,writer,subject,reg_date,readcount,
+		filename,filesize,down,re_revel,
+		(select count(*) from board_comment where board_num=num)
+			board_comment
+		from board	
+		<choose>
+			<when test="search_option != 'all' ">
+				where ${search_option} like #{keyword}
+			</when>
+			<when test="search_option == 'all' ">
+				where writer like #{keyword} or subject like #{keyword}
+				or content like #{keyword}
+			</when>			
+		</choose>	
+			order by ref desc, re_step asc
+	</select>
+	
+	
+<!-- 글쓰기 -->	
+	<insert id="insert">
+	insert into board
+	(num,writer,subject,passwd,ref,re_step,
+	re_revel,content,ip,filename,filesize) values
+	 ( (select nvl(max(num)+1,1) from board),
+		#{writer}, #{subject}, #{passwd},
+	(select	nvl(max(num)+1,1) from board),1,0,
+	#{content}, #{ip}, #{filename}, #{filesize})    <!-- 마지막엔 세미콜론 지우기 ; -->
+	</insert>
+	
+	<select id="getFilename" resultType="String">
+		select filename from board where num=#{num}
+	</select>
+ 	<!-- 다운로드 횟수 증가 처리	 -->
+	<update id="plusDown">
+		update board set down=down+1 where num=#{num}
+	</update>
+
+</mapper>

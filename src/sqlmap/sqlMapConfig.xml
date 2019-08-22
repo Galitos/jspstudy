@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- xml 지시어 -->
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 알리아스 설정 -->
+	<typeAliases>
+	</typeAliases>
+	<!-- db연결 참조코드 -->
+	<environments default="">
+		<environment id="">
+			<transactionManager type="JDBC" />
+			<dataSource type="JNDI">
+				<property name="data_source" value="java:comp/env/oraDB" />
+			</dataSource>
+		</environment>
+	</environments>
+	<!-- 실제 sql query -->
+	<mappers>
+		<mapper resource="board/mapper/board.xml" />
+	</mappers>
+</configuration>
+
+
+
+
+
+<!-- <mapper resource="emp/mapper/emp.xml" /> <mapper resource="student/mapper/student.xml" 
+	/> <mapper resource="student/mapper/dept.xml" /> <mapper resource="student/mapper/prof.xml" 
+	/> <mapper resource="student/mapper/lecture.xml" /> <mapper resource="memo/mapper/memo.xml" 
+	/> -->
